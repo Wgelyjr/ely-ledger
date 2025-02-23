@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="display-4">My Journal</h1>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('new_entry') }}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> New Entry
+        </a>
+    </div>
+</div>
+
+{% if entries %}
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    {% for entry in entries %}
+    <div class="col">
+        <div class="card h-100 entry-card shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="card-title mb-0">
+                        {% if entry.mood %}
+                        <span class="mood-indicator" style="background-color: 
+                            {% if entry.mood == 'happy' %}#28a745
+                            {% elif entry.mood == 'sad' %}#dc3545
+                            {% elif entry.mood == 'neutral' %}#ffc107
+                            {% else %}#6c757d{% endif %};">
+                        </span>
+                        {% endif %}
+                        {{ entry.title }}
+                    </h5>
+                    <small class="text-muted">
+                        {{ entry.created_at.strftime('%Y-%m-%d %H:%M') }}
+                    </small>
+                </div>
+                <p class="card-text">{{ entry.content[:200] }}{% if entry.content|length > 200 %}...{% endif %}</p>
+                {% if entry.tags %}
+                <div class="mb-2">
+                    {% for tag in entry.tags.split(',') %}
+                    <span class="tag">{{ tag.strip() }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{{ url_for('view_entry', id=entry.id) }}" class="btn btn-sm btn-outline-primary">Read More</a>
+                    {% if entry.ai_summary %}
+                    <span class="badge bg-info">AI Summary Available</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5">
+    <i class="bi bi-journal-text display-1 text-muted mb-3"></i>
+    <h2>No Journal Entries Yet</h2>
+    <p class="lead text-muted">Start writing your first entry!</p>
+    <a href="{{ url_for('new_entry') }}" class="btn btn-primary btn-lg">
+        <i class="bi bi-plus-lg"></i> Create First Entry
+    </a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Enable tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+});
+</script>
+{% endblock %}

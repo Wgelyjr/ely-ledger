@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Edit - {{ entry.title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-md-10 col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h1 class="card-title mb-4">Edit Journal Entry</h1>
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="title" name="title" 
+                               value="{{ entry.title }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="content" class="form-label">Content</label>
+                        <textarea class="form-control" id="content" name="content" 
+                                rows="10" required>{{ entry.content }}</textarea>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="mood" class="form-label">Mood</label>
+                            <select class="form-select" id="mood" name="mood">
+                                <option value="">Select mood...</option>
+                                <option value="happy" {% if entry.mood == 'happy' %}selected{% endif %}>Happy</option>
+                                <option value="neutral" {% if entry.mood == 'neutral' %}selected{% endif %}>Neutral</option>
+                                <option value="sad" {% if entry.mood == 'sad' %}selected{% endif %}>Sad</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="tags" class="form-label">Tags</label>
+                            <input type="text" class="form-control" id="tags" name="tags" 
+                                   value="{{ entry.tags }}" placeholder="Comma-separated tags">
+                            <div class="form-text" id="tagsPreview">
+                                {% if entry.tags %}
+                                    {% for tag in entry.tags.split(',') %}
+                                    <span class="tag">{{ tag.strip() }}</span>
+                                    {% endfor %}
+                                {% else %}
+                                    Separate tags with commas (e.g., work, personal, ideas)
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('view_entry', id=entry.id) }}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-expand textarea as user types
+    const textarea = document.getElementById('content');
+    const adjustHeight = () => {
+        textarea.style.height = 'auto';
+        textarea.style.height = (textarea.scrollHeight) + 'px';
+    };
+    textarea.addEventListener('input', adjustHeight);
+    // Initial height adjustment
+    adjustHeight();
+
+    // Preview tags as they're typed
+    const tagsInput = document.getElementById('tags');
+    const tagsPreview = document.getElementById('tagsPreview');
+    
+    const updateTagsPreview = () => {
+        const tags = tagsInput.value.split(',').map(tag => tag.trim()).filter(tag => tag);
+        if (tags.length > 0) {
+            let preview = tags.map(tag => `<span class="tag">${tag}</span>`).join(' ');
+            tagsPreview.innerHTML = preview;
+        } else {
+            tagsPreview.innerHTML = 'Separate tags with commas (e.g., work, personal, ideas)';
+        }
+    };
+    
+    tagsInput.addEventListener('input', updateTagsPreview);
+});
+</script>
+{% endblock %}
