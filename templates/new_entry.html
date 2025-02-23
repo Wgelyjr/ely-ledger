@@ -33,6 +33,7 @@
                             <label for="tags" class="form-label">Tags</label>
                             <input type="text" class="form-control" id="tags" name="tags" 
                                    placeholder="Comma-separated tags">
+                            <div id="tagPreview" class="mb-2"></div>
                             <div class="form-text">Separate tags with commas (e.g., work, personal, ideas)</div>
                         </div>
                     </div>
@@ -60,17 +61,20 @@ document.addEventListener('DOMContentLoaded', function() {
         this.style.height = (this.scrollHeight) + 'px';
     });
 
-    // Preview tags as they're typed
+    // Handle tags
     const tagsInput = document.getElementById('tags');
-    tagsInput.addEventListener('input', function() {
-        const tags = this.value.split(',').map(tag => tag.trim()).filter(tag => tag);
+    const tagPreview = document.getElementById('tagPreview');
+
+    function updateTagPreview() {
+        const tags = tagsInput.value.split(',').map(tag => tag.trim()).filter(tag => tag);
         if (tags.length > 0) {
-            let preview = tags.map(tag => `<span class="tag">${tag}</span>`).join(' ');
-            this.nextElementSibling.innerHTML = preview;
+            tagPreview.innerHTML = tags.map(tag => `<span class="tag">${tag}</span>`).join(' ');
         } else {
-            this.nextElementSibling.innerHTML = 'Separate tags with commas (e.g., work, personal, ideas)';
+            tagPreview.innerHTML = '';
         }
-    });
+    }
+
+    tagsInput.addEventListener('input', updateTagPreview);
 });
 </script>
 {% endblock %}

@@ -38,21 +38,6 @@
                     {{ entry.content|replace('\n', '<br>')|safe }}
                 </div>
 
-                {% if entry.ai_summary %}
-                <div class="card bg-light mb-4">
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            <i class="bi bi-robot"></i> AI Summary
-                        </h5>
-                        <p class="card-text">{{ entry.ai_summary }}</p>
-                    </div>
-                </div>
-                {% else %}
-                <button class="btn btn-outline-primary mb-4" id="generateSummary">
-                    <i class="bi bi-robot"></i> Generate AI Summary
-                </button>
-                {% endif %}
-
                 <div class="d-flex justify-content-between">
                     <div>
                         <a href="{{ url_for('index') }}" class="btn btn-outline-secondary me-2">
@@ -84,32 +69,6 @@ document.addEventListener('DOMContentLoaded', function() {
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl)
     });
-
-    // Handle AI summary generation
-    const summaryButton = document.getElementById('generateSummary');
-    if (summaryButton) {
-        summaryButton.addEventListener('click', async function() {
-            try {
-                summaryButton.disabled = true;
-                summaryButton.innerHTML = '<i class="bi bi-hourglass-split"></i> Generating...';
-                
-                const response = await fetch(`/api/entry/{{ entry.id }}/summary`, {
-                    method: 'POST'
-                });
-                const data = await response.json();
-                
-                if (response.ok) {
-                    location.reload();
-                } else {
-                    throw new Error(data.message || 'Failed to generate summary');
-                }
-            } catch (error) {
-                alert('Error: ' + error.message);
-                summaryButton.disabled = false;
-                summaryButton.innerHTML = '<i class="bi bi-robot"></i> Generate AI Summary';
-            }
-        });
-    }
 });
 </script>
 {% endblock %}

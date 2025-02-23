@@ -1,3 +1,4 @@
+
 {% extends "base.html" %}
 
 {% block title %}Edit - {{ entry.title }}{% endblock %}
@@ -35,15 +36,14 @@
                             <label for="tags" class="form-label">Tags</label>
                             <input type="text" class="form-control" id="tags" name="tags" 
                                    value="{{ entry.tags }}" placeholder="Comma-separated tags">
-                            <div class="form-text" id="tagsPreview">
+                            <div id="tagPreview" class="mb-2">
                                 {% if entry.tags %}
                                     {% for tag in entry.tags.split(',') %}
                                     <span class="tag">{{ tag.strip() }}</span>
                                     {% endfor %}
-                                {% else %}
-                                    Separate tags with commas (e.g., work, personal, ideas)
                                 {% endif %}
                             </div>
+                            <div class="form-text">Separate tags with commas (e.g., work, personal, ideas)</div>
                         </div>
                     </div>
 
@@ -73,21 +73,69 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initial height adjustment
     adjustHeight();
 
-    // Preview tags as they're typed
+    // Handle tags
     const tagsInput = document.getElementById('tags');
-    const tagsPreview = document.getElementById('tagsPreview');
-    
-    const updateTagsPreview = () => {
+    const tagPreview = document.getElementById('tagPreview');
+
+    function updateTagPreview() {
         const tags = tagsInput.value.split(',').map(tag => tag.trim()).filter(tag => tag);
         if (tags.length > 0) {
-            let preview = tags.map(tag => `<span class="tag">${tag}</span>`).join(' ');
-            tagsPreview.innerHTML = preview;
+            tagPreview.innerHTML = tags.map(tag => `<span class="tag">${tag}</span>`).join(' ');
         } else {
-            tagsPreview.innerHTML = 'Separate tags with commas (e.g., work, personal, ideas)';
+            tagPreview.innerHTML = '';
         }
-    };
-    
-    tagsInput.addEventListener('input', updateTagsPreview);
+    }
+
+    tagsInput.addEventListener('input', updateTagPreview);
 });
 </script>
 {% endblock %}
+            tagPreview.innerHTML = '';
+        }
+    }
+
+    tagsInput.addEventListener('input', updateTagPreview);
+
+    if (suggestTagsBtn) {
+        suggestTagsBtn.addEventListener('click', async function() {
+            const content = document.getElementById('content').value;
+            if (!content) {
+                alert('Please write some content first to generate tags.');
+                return;
+            }
+
+            try {
+                suggestTagsBtn.disabled = true;
+                suggestTagsBtn.innerHTML = '<i class="bi bi-hourglass-split"></i>';
+
+                const response = await fetch('/api/entry/generate-tags', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ content })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to generate tags');
+                }
+
+                const data = await response.json();
+                const existingTags = new Set(tagsInput.value.split(',').map(t => t.trim()).filter(t => t));
+                const newTags = data.tags.filter(tag => !existingTags.has(tag));
+                
+                if (newTags.length > 0) {
+                    const allTags = [...existingTags, ...newTags];
+                    tagsInput.value = allTags.join(', ');
+                    updateTagPreview();
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                suggestTagsBtn.disabled = false;
+                suggestTagsBtn.innerHTML = '<i class="bi bi-magic"></i>';
+            }
+        });
+    }
+});
+</script>
